@@ -112,6 +112,20 @@ function stopTimer() {
     let timerDisplay = document.querySelector('h1');
     timerDisplay.innerText = '00:00:00';
 }
+function stopTimer() {
+    clearInterval(timerInterval);
+    timerInterval = undefined;
+    startButton.disabled = false;
+    pauseButton.disabled = true;
+    let timerDisplay = document.querySelector('h1');
+    timerDisplay.innerText = '00:00:00';
+}
+function pauseTimer() {
+    clearInterval(timerInterval);
+    timerInterval = undefined;
+    startButton.disabled = false;
+    pauseButton.innerText = "Resume";
+}
     </script>
 </body>
 </html>
