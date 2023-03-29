@@ -50,7 +50,7 @@
     <input type="number" id="seconds" min="0" max="59" placeholder="0">
     <br>
     <button id="start-button" onclick="startTimer()">Start</button>
-    <button onclick="stopTimer()">Stop</button>
+    <button id="stop-button" onclick="stopTimer()" disabled>Stop</button>
     <button id="pause-button" onclick="pauseTimer()">Pause</button>
     <script>
         let hoursInput = document.getElementById('hours');
@@ -59,10 +59,14 @@
         let startButton = document.getElementById('start-button');
         let stopButton = document.getElementById('stop-button');
         let pauseButton = document.getElementById('pause-button');
+        let pauseButtonClicks = 0;
+        let timeLeft = 0;
+        const timeString = 0;
         let timerInterval;
         let isPaused = false;
 
-        function startTimer() {
+function startTimer() {
+    pauseButton.disabled = false;
     if (timerInterval) {
         return;
     }
@@ -73,8 +77,23 @@
     let totalTime = hours * 3600 + minutes * 60 + seconds * 1;
     let timerDisplay = document.querySelector('h1');
 
+    // Call countdown() with totalTime as argument
+    countdown(totalTime);
+
+    startButton.disabled = true;
+    stopButton.disabled = false; // enable stop button
+    pauseButton.disabled = false; // enable pause button
+    return
+}
+
+
+function countdown(totalTime) {
+    startButton.disabled = true;
+    let remainingTime = totalTime;
+    let timerDisplay = document.querySelector('h1');
+
     timerInterval = setInterval(function() {
-        let remainingTime = totalTime--;
+        remainingTime--;
         let remainingHours = Math.floor(remainingTime / 3600);
         let remainingMinutes = Math.floor((remainingTime % 3600) / 60);
         let remainingSeconds = remainingTime % 60;
@@ -83,49 +102,61 @@
         if (remainingTime <= 0) {
             clearInterval(timerInterval);
             timerDisplay.innerText = '00:00:00';
+            startButton.disabled = false;
+            pauseButton.disabled = false;
             alert('Timer finished!');
         }
     }, 1000);
-
-    startButton.disabled = true;
+    return
+}
+function stopTimer() {
+    clearInterval(timerInterval);
+    timerInterval = undefined;
+    startButton.disabled = false;
     pauseButton.disabled = false;
+    stopButton.disabled = true;
+    let timerDisplay = document.querySelector('h1');
+    timerDisplay.innerText = '00:00:00';
+    return
 }
-function countdown() {
-            let remainingTime = totalTime--;
-            let remainingHours = Math.floor(remainingTime / 3600);
-            let remainingMinutes = Math.floor((remainingTime % 3600) / 60);
-            let remainingSeconds = remainingTime % 60;
-            timerDisplay.innerText = `${remainingHours.toString().padStart(2, '0')}:${remainingMinutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
 
-            if (remainingTime <= 0) {
-                clearInterval(timerInterval);
-                timerDisplay.innerText = '00:00:00';
-                alert('Timer finished!');
-                pauseButton.disabled = true;
-            }
-        }
-function stopTimer() {
-    clearInterval(timerInterval);
-    timerInterval = undefined;
-    startButton.disabled = false;
-    pauseButton.disabled = true;
-    let timerDisplay = document.querySelector('h1');
-    timerDisplay.innerText = '00:00:00';
-}
-function stopTimer() {
-    clearInterval(timerInterval);
-    timerInterval = undefined;
-    startButton.disabled = false;
-    pauseButton.disabled = true;
-    let timerDisplay = document.querySelector('h1');
-    timerDisplay.innerText = '00:00:00';
-}
 function pauseTimer() {
+    pauseButtonClicks++;
+    startButton.disabled = true;
+    if (pauseButtonClicks % 2 === 0) {
+        resumeTimer();
+    } else {
+        pauseInterval();
+    }
+    return
+}
+
+function resumeTimer() {
+  clearInterval(timerInterval);
+  timerInterval = undefined;
+  const timeString = document.querySelector('h1').innerText;
+  const [hours, minutes, seconds] = timeString.split(':').map(Number);
+  const timeLeft = hours * 3600 + minutes * 60 + seconds;
+  //stopTimer();
+  countdown(timeLeft)
+  stopButton.disabled = false;
+  pauseButton.innerText = 'Pause';
+  return
+}
+
+
+
+function pauseInterval() {
     clearInterval(timerInterval);
     timerInterval = undefined;
-    startButton.disabled = false;
+    startButton.disabled = true;
     pauseButton.innerText = "Resume";
+    timeLeft = parseInt(timerDisplay.textContent);
+
+    return
 }
+
+pauseButton.disabled = true;
     </script>
 </body>
 </html>
