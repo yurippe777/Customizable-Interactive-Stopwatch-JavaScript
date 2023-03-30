@@ -4,9 +4,9 @@
 <div class="dropdown">
     <button class="dropbtn">Shop</button>
     <div class="dropdown-content">
-      <a href="#">Backgrounds</a>
-      <a href="#">Alarm Sounds</a>
-      <a href="#">Titles</a>
+      <button class="dropbtn" onclick="backgrounds()">Backgrounds</button>
+      <button class="dropbtn" onclick="alarm_sounds()">Alarm sounds</button>
+      <button class="dropbtn" onclick="titles()">Titles</button>
     </div>
   </div>
 <head>
@@ -89,10 +89,10 @@
 
 .dropdown-content a {
   color: black;
-  padding: 12px 16px;
+  padding: none;
   text-decoration: none;
   display: block;
-  border-bottom: 1px solid #ddd;
+  border-bottom: none;
 }
 
 .dropdown-content a:hover {
@@ -101,6 +101,7 @@
 
 .dropdown:hover .dropdown-content {
   display: block;
+  background-color: rgba(0, 0, 0, 0.0);
 }
     </style>
 </head>
@@ -134,6 +135,7 @@
         const gifElement = document.createElement('img');
         let timerDisplay = document.querySelector('h1');
         let coins = parseInt(localStorage.getItem('coins')) || 0;
+        let menuOpen = false;
         updateCoins();
                 // Get the dropdown button and content
         const dropdownBtn = document.querySelector('.dropbtn');
@@ -302,7 +304,102 @@ function addCat() {
   changeGif();
   body.appendChild(gifElement);
 }
+function backgrounds() {
+  if (menuOpen) {
+    return;
+  }
+  const menu = document.createElement('div');
+  menu.className = 'menu';
 
+  const option1 = document.createElement('button');
+  option1.innerText = 'Option 1';
+
+  const option2 = document.createElement('button');
+  option2.innerText = 'Option 2';
+
+  const option3 = document.createElement('button');
+  option3.innerText = 'Option 3';
+
+  const cancel = document.createElement('button');
+  cancel.innerText = 'Cancel';
+  cancel.addEventListener('click', function() {menu.style.display = 'none'; menuOpen = false;
+
+  
+  // perform action here
+});
+
+  menu.appendChild(option1);
+  menu.appendChild(option2);
+  menu.appendChild(option3);
+  menu.appendChild(cancel);
+
+  document.body.appendChild(menu);
+  menuOpen = true;
+}
+function alarm_sounds() {
+  if (menuOpen) {
+    return;
+  }
+  const menu = document.createElement('div');
+  menu.className = 'menu';
+
+  const option1 = document.createElement('button');
+  option1.innerText = 'Option 1';
+
+  const option2 = document.createElement('button');
+  option2.innerText = 'Option 2';
+
+  const option3 = document.createElement('button');
+  option3.innerText = 'Option 3';
+
+  const cancel = document.createElement('button');
+  cancel.innerText = 'Cancel';
+  cancel.addEventListener('click', function() {menu.style.display = 'none'; menuOpen = false;
+
+  
+  // perform action here
+});
+
+  menu.appendChild(option1);
+  menu.appendChild(option2);
+  menu.appendChild(option3);
+  menu.appendChild(cancel);
+
+  document.body.appendChild(menu);
+  menuOpen = true;
+}
+function titles() {
+  if (menuOpen) {
+    return;
+  }
+  const menu = document.createElement('div');
+  menu.className = 'menu';
+
+  const option1 = document.createElement('button');
+  option1.innerText = 'Option 1';
+
+  const option2 = document.createElement('button');
+  option2.innerText = 'Option 2';
+
+  const option3 = document.createElement('button');
+  option3.innerText = 'Option 3';
+
+  const cancel = document.createElement('button');
+  cancel.innerText = 'Cancel';
+  cancel.addEventListener('click', function() {menu.style.display = 'none'; menuOpen = false;
+
+  
+  // perform action here
+});
+
+  menu.appendChild(option1);
+  menu.appendChild(option2);
+  menu.appendChild(option3);
+  menu.appendChild(cancel);
+
+  document.body.appendChild(menu);
+  menuOpen = true;
+}
 
 pauseButton.disabled = true;
     </script>
