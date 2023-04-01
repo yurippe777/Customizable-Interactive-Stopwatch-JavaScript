@@ -9,6 +9,8 @@
       <button class="dropbtn" onclick="titles()">Titles</button>
     </div>
   </div>
+<div id="top-message">This is the top message</div>
+
 <head>
     <meta charset="UTF-8">
     <title>Timer Example</title>
@@ -54,7 +56,18 @@
         img {
   vertical-align: middle;
   margin-bottom: 2px; /* add some margin to move the image down */
+  pointer-events: none;
 }
+#top-message {
+  position: fixed;
+  top: 100;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: black;
+  border: 1px solid blueviolet;
+  padding: 10px;
+}
+
 /* Dropdown menu */
 .dropdown {
   position: absolute;
@@ -132,10 +145,21 @@
         let isPaused = false;
         let currentGifIndex = -1;
         let gifInterval;
+        alarmID = "resources/neco.mp3"
+        const selectedSound = localStorage.getItem('alarmSound');
+        if (selectedSound) {
+        alarmID = selectedSound;
+          }
         const gifElement = document.createElement('img');
         let timerDisplay = document.querySelector('h1');
         let coins = parseInt(localStorage.getItem('coins')) || 0;
         let menuOpen = false;
+        const topMessage = document.getElementById('top-message');
+        topMessage.innerText = 'Novice Waiter';
+        const storedOption = localStorage.getItem('titleOption');
+         if (storedOption) {
+          topMessage.innerText = storedOption;
+          }
         updateCoins();
                 // Get the dropdown button and content
         const dropdownBtn = document.querySelector('.dropbtn');
@@ -145,7 +169,9 @@
         dropdownBtn.addEventListener('click', function() {
         dropdownContent.classList.toggle('show');
         });
-
+        const bgImage = localStorage.getItem('bgImage');
+  if (bgImage) {
+    document.body.style.backgroundImage = `url(${bgImage})`;}
         // Close the dropdown menu if the user clicks outside of it
         window.addEventListener('click', function(event) {
         if (!event.target.matches('.dropbtn')) {
@@ -193,11 +219,31 @@ function countdown(totalTime) {
         timerDisplay.innerText = `${remainingHours.toString().padStart(2, '0')}:${remainingMinutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
 
         if (remainingTime <= 0) {
+            const alarm = new Audio(alarmID);
+            alarm.loop = true;
+            alarm.play();
             clearInterval(timerInterval);
             timerDisplay.innerText = '00:00:00';
             startButton.disabled = false;
             pauseButton.disabled = false;
-            alert('Timer finished!');
+            const overlay = document.createElement('div');
+            overlay.classList.add('overlay');
+            const modal = document.createElement('div');
+            modal.classList.add('modal');
+            const message = document.createElement('p');
+            message.innerText = 'Timer finished!';
+            const okButton = document.createElement('button');
+            okButton.innerText = 'OK';
+            okButton.addEventListener('click', function() {
+              alarm.pause();
+              modal.remove();
+              overlay.remove();
+            });
+            modal.appendChild(message);
+            modal.appendChild(okButton);
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+            stopTimer();
         }
     }, 1000);
     return
@@ -313,20 +359,31 @@ function backgrounds() {
 
   const option1 = document.createElement('button');
   option1.innerText = 'Option 1';
+  option1.addEventListener('click', function() {
+    document.body.style.backgroundImage = "url(https://img.itch.zone/aW1nLzU4ODcxMzUucG5n/original/A%2B%2Fbft.png)";
+    localStorage.setItem('bgImage', 'https://img.itch.zone/aW1nLzU4ODcxMzUucG5n/original/A%2B%2Fbft.png');
+  });
 
   const option2 = document.createElement('button');
   option2.innerText = 'Option 2';
+  option2.addEventListener('click', function() {
+    document.body.style.backgroundImage = "url('resources/bg3.png')";
+    localStorage.setItem('bgImage', 'resources/bg3.png');
+  });
 
   const option3 = document.createElement('button');
   option3.innerText = 'Option 3';
+  option3.addEventListener('click', function() {
+    document.body.style.backgroundImage = "url('resources/bg1.png')";
+    localStorage.setItem('bgImage', 'resources/bg1.png');
+  });
 
   const cancel = document.createElement('button');
   cancel.innerText = 'Cancel';
-  cancel.addEventListener('click', function() {menu.style.display = 'none'; menuOpen = false;
-
-  
-  // perform action here
-});
+  cancel.addEventListener('click', function() {
+    menu.style.display = 'none';
+    menuOpen = false;
+  });
 
   menu.appendChild(option1);
   menu.appendChild(option2);
@@ -335,7 +392,14 @@ function backgrounds() {
 
   document.body.appendChild(menu);
   menuOpen = true;
+
+  // Retrieve the background image URL from localStorage and set the background image
+  const bgImage = localStorage.getItem('bgImage');
+  if (bgImage) {
+    document.body.style.backgroundImage = `url(${bgImage})`;
+  }
 }
+
 function alarm_sounds() {
   if (menuOpen) {
     return;
@@ -345,20 +409,31 @@ function alarm_sounds() {
 
   const option1 = document.createElement('button');
   option1.innerText = 'Option 1';
+  option1.addEventListener('click', function() {
+    alarmID = "resources/neco.mp3";
+    localStorage.setItem('alarmSound', 'resources/neco.mp3');
+  });
 
   const option2 = document.createElement('button');
   option2.innerText = 'Option 2';
+  option2.addEventListener('click', function() {
+    alarmID = "resources/rooster.wav";
+    localStorage.setItem('alarmSound', 'resources/rooster.wav');
+  });
 
   const option3 = document.createElement('button');
   option3.innerText = 'Option 3';
+  option3.addEventListener('click', function() {
+    alarmID = "resources/dori.mp3";
+    localStorage.setItem('alarmSound', 'resources/dori.mp3');
+  });
 
   const cancel = document.createElement('button');
   cancel.innerText = 'Cancel';
-  cancel.addEventListener('click', function() {menu.style.display = 'none'; menuOpen = false;
-
-  
-  // perform action here
-});
+  cancel.addEventListener('click', function() {
+    menu.style.display = 'none';
+    menuOpen = false;
+  });
 
   menu.appendChild(option1);
   menu.appendChild(option2);
@@ -367,7 +442,14 @@ function alarm_sounds() {
 
   document.body.appendChild(menu);
   menuOpen = true;
+
+  // Retrieve the selected alarm sound from localStorage
+  const selectedSound = localStorage.getItem('alarmSound');
+  if (selectedSound) {
+    alarmID = selectedSound;
+  }
 }
+
 function titles() {
   if (menuOpen) {
     return;
@@ -377,20 +459,31 @@ function titles() {
 
   const option1 = document.createElement('button');
   option1.innerText = 'Option 1';
+  option1.addEventListener('click', function() {
+    topMessage.innerText = "op1";
+    localStorage.setItem('titleOption', 'op1');
+  })
 
   const option2 = document.createElement('button');
   option2.innerText = 'Option 2';
+  option2.addEventListener('click', function() {
+    topMessage.innerText = "op2";
+    localStorage.setItem('titleOption', 'op2');
+  })
 
   const option3 = document.createElement('button');
   option3.innerText = 'Option 3';
+  option3.addEventListener('click', function() {
+    topMessage.innerText = "op3";
+    localStorage.setItem('titleOption', 'op3');
+  })
 
   const cancel = document.createElement('button');
   cancel.innerText = 'Cancel';
-  cancel.addEventListener('click', function() {menu.style.display = 'none'; menuOpen = false;
-
-  
-  // perform action here
-});
+  cancel.addEventListener('click', function() {
+    menu.style.display = 'none'; 
+    menuOpen = false;
+  });
 
   menu.appendChild(option1);
   menu.appendChild(option2);
@@ -399,7 +492,15 @@ function titles() {
 
   document.body.appendChild(menu);
   menuOpen = true;
+
+  // retrieve and apply stored option on page load
+  const storedOption = localStorage.getItem('titleOption');
+  if (storedOption) {
+    topMessage.innerText = storedOption;
+  }
 }
+
+
 
 pauseButton.disabled = true;
     </script>
