@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<p><img src="resources/gem.png" alt="Coins"> <span id="coin-count"></span></p>
+<div class="dropdown">
+    <button class="dropbtn">Customize</button>
+    <div class="dropdown-content">
+      <button class="dropbtn" onclick="backgrounds()">Backgrounds</button>
+      <button class="dropbtn" onclick="alarm_sounds()">Alarm sounds</button>
+      <button class="dropbtn" onclick="titles()">Titles</button>
+    </div>
+  </div>
+<div id="top-message">This is the top message</div>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Timer Example</title>
+    <style>
+        .small-gif {
+             width: 600px;
+             height: 600px;
+            }
+        body {
+            background-image: url('https://img.itch.zone/aW1nLzU4ODcxMzUucG5n/original/A%2B%2Fbft.png');
+            background-size: cover;
+            background-position: top;
+            font-family: sans-serif;
+            color: white;
+            text-align: center;
+            }
+        h1 {
+            font-size: 5rem;
+            margin-top: 20vh;
+            }
+        input[type="number"] {
+            width: 3rem;
+            margin: 0 0.5rem;
+            }
+        button {
+            margin-top: 1rem;
+            background-color: white;
+            color: #4CAF50;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            }
+        button:hover {
+            background-color: #4CAF50;
+            color: white;
+            }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            }
+        img {
+            vertical-align: middle;
+            margin-bottom: 2px; /* add some margin to move the image down */
+            pointer-events: none;
+            }
+        #top-message {
+            position: fixed;
+            top: 100;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: black;
+            border: 1px solid blueviolet;
+            padding: 10px;
+            }
+
+        /* Dropdown menu */
+        .dropdown {
+            position: absolute;
+            top: 50%;
+            right: 200px;
+            transform: translateY(-50%);
+            display: inline-block;
+            }
+
+        .dropbtn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 16px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 160px; /* Add this line */
+          
+            }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            z-index: 1;
+            top: 60px;
+            background-color: #f9f9f9;
+              min-width: 160px;
+              box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+              border-radius: 5px;
+            }
+
+        .dropdown-content a {
+            color: black;
+            padding: none;
+            text-decoration: none;
+            display: block;
+            border-bottom: none;
+            }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+            }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+            background-color: rgba(0, 0, 0, 0.0);
+            }
+    </style>
+</head>
+<body>
+    <h1>00:00:00</h1>
+    <label for="hours">Hours:</label>
+    <input type="number" id="hours" min="0" max="23" placeholder="0">
+    <label for="minutes">Minutes:</label>
+    <input type="number" id="minutes" min="0" max="59" placeholder="0">
+    <label for="seconds">Seconds:</label>
+    <input type="number" id="seconds" min="0" max="59" placeholder="0">
+    <br>
+    <button id="start-button" onclick="startTimer()">Start</button>
+    <button id="stop-button" onclick="stopTimer()" disabled>Stop</button>
+    <button id="pause-button" onclick="pauseTimer()">Pause</button>
+    <button onclick="addCat()" id="catButton">🐈</button>
+<script>
+    let hoursInput = document.getElementById('hours');
+    let minutesInput = document.getElementById('minutes');
+    let secondsInput = document.getElementById('seconds');
+    let startButton = document.getElementById('start-button');
+    let stopButton = document.getElementById('stop-button');
+    let pauseButton = document.getElementById('pause-button');
+    let pauseButtonClicks = 0;
+    let timeLeft = 0;
+    let timerInterval;
+    let isPaused = false;
+    let currentGifIndex = -1;
+    let gifInterval;
+    const timeString = 0;
+
+    //set default alarm sound and load any saved ones
+    let alarmID = "resources/neco.mp3"
+    const selectedSound = localStorage.getItem('alarmSound');
+    if (selectedSound) {
+      alarmID = selectedSound;
+    }
+    //Load coins from previous sessions.
+    const gifElement = document.createElement('img');
+    let timerDisplay = document.querySelector('h1');
+    let coins = parseInt(localStorage.getItem('coins')) || 0;
+    let menuOpen = false;
+
+    //add default title and load any saved ones
+    const topMessage = document.getElementById('top-message');
+    topMessage.innerText = 'Novice Waiter';
+    const storedOption = localStorage.getItem('titleOption');
+    if (storedOption) {
+      topMessage.innerText = storedOption;
+    }
+    //runs update coins function
+    updateCoins();
+
+    // Get the dropdown button and content
+    const dropdownBtn = document.querySelector('.dropbtn');
+    const dropdownContent = document.querySelector('.dropdown-content');
+
+    // Add event listener to dropdown button
+    dropdownBtn.addEventListener('click', function() {
+      dropdownContent.classList.toggle('show');
+    });
+    //loads any saved bg image
+    const bgImage = localStorage.getItem('bgImage');
+    if (bgImage) {
+      document.body.style.backgroundImage = `url(${bgImage})`;
+    }
+
+    // Close the dropdown menu if the user clicks outside of it
+    window.addEventListener('click', function(event) {
+      if (!event.target.matches('.dropbtn')) {
+        dropdownContent.classList.remove('show');
+      }
+    });
+    pauseButton.disabled = true;
+      function startTimer() {
+                  if (timerInterval) {
+                      return;
+                  }
+
+                  let hours = hoursInput.value || 0;
+                  let minutes = minutesInput.value || 0;
+                  let seconds = secondsInput.value || 0;
+
+                  // Check if all input fields are empty or have a value of 0
+                  if (!hours && !minutes && !seconds) {
+                      return;
+                  }
+                  
+                  let totalTime = hours * 3600 + minutes * 60 + seconds * 1;
+                  
+                  // Call countdown() with totalTime as argument
+                  countdown(totalTime);
+                  startButton.disabled = true;
+                  stopButton.disabled = false; // enable stop button
+                  pauseButton.disabled = false; // enable pause button
+                  return
+                  }
+
+
+
+      function countdown(totalTime) {
+          startButton.disabled = true;
+          let remainingTime = totalTime;
+          let timerDisplay = document.querySelector('h1');
+
+          timerInterval = setInterval(function() {
+              remainingTime--;
+              coins++;
+              updateCoins();
+              let remainingHours = Math.floor(remainingTime / 3600);
+              let remainingMinutes = Math.floor((remainingTime % 3600) / 60);
+              let remainingSeconds = remainingTime % 60;
+              timerDisplay.innerText = `${remainingHours.toString().padStart(2, '0')}:${remainingMinutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+
+              if (remainingTime <= 0) {
+                  const alarm = new Audio(alarmID);
+                  alarm.loop = true;
+                  alarm.play();
+                  clearInterval(timerInterval);
+                  timerDisplay.innerText = '00:00:00';
+                  startButton.disabled = false;
+                  pauseButton.disabled = false;
+                  const overlay = document.createElement('div');
+                  overlay.classList.add('overlay');
+                  const modal = document.createElement('div');
+                  modal.classList.add('modal');
+                  const message = document.createElement('p');
+                  message.innerText = 'Timer finished!';
+                  const okButton = document.createElement('button');
+                  okButton.innerText = 'OK';
+                  okButton.addEventListener('click', function() {
+                    alarm.pause();
+                    modal.remove();
+                    overlay.remove();
+                  });
+                  modal.appendChild(message);
+                  modal.appendChild(okButton);
+                  overlay.appendChild(modal);
+                  document.body.appendChild(overlay);
+                  stopTimer();
+                      }
+                  }, 1000);
+                  return
+                  }
+      function updateCoins() {
+        const coinDisplay = document.querySelector('#coin-count');
+        coinDisplay.innerText = coins;
+        const coinImage = document.querySelector('img');
+        coinImage.src = 'resources/gem.png';
+        localStorage.setItem('coins', coins);
+        }
+      function stopTimer() {
+          clearInterval(timerInterval);
+          timerInterval = undefined;
+          startButton.disabled = false;
+          pauseButton.disabled = false;
+          stopButton.disabled = true;
+          timerDisplay.innerText = '00:00:00';
+          pauseButtonClicks = 0; //reset pause button clicks
+          pauseButton.innerText = 'Pause'
+          pauseButton.disabled = true;
+          return
+          }
+
+      function pauseTimer() {
+          pauseButtonClicks++;
+          startButton.disabled = true;
+          if (pauseButtonClicks % 2 === 0) {
+              resumeTimer();
+          } else {
+              pauseInterval();
+          }
+          return
+          }
+
+      function resumeTimer() {
+        clearInterval(timerInterval);
+        timerInterval = undefined;
+        const timeString = document.querySelector('h1').innerText;
+        const [hours, minutes, seconds] = timeString.split(':').map(Number);
+        const timeLeft = hours * 3600 + minutes * 60 + seconds;
+        coins = parseInt(localStorage.getItem('coins')) || 0; // retrieve coins from localStorage
+        localStorage.setItem('coins', 0); // reset coins in localStorage
+        countdown(timeLeft);
+        stopButton.disabled = false;
+        pauseButton.innerText = 'Pause';
+        return;
+        }
+
+
+
+      function pauseInterval() {
+          clearInterval(timerInterval);
+          timerInterval = undefined;
+          startButton.disabled = true;
+          pauseButton.innerText = "Resume";
+          timeLeft = parseInt(timerDisplay.textContent);
+
+          return
+          }
+      function addCat() {
+        const gifLinks = [
+          'https://i.redd.it/4ur8wlpamjo91.gif',
+          'https://i.redd.it/2a4uinpamjo91.gif',
+          'https://i.redd.it/6u5ellqamjo91.gif',
+          'https://i.redd.it/2yeopeqamjo91.gif',
+          'https://i.redd.it/7iz5zfqamjo91.gif',
+          'https://i.redd.it/uh2igeqamjo91.gif',
+          'https://i.redd.it/numhxgqamjo91.gif',
+          'https://i.redd.it/gkvw6fqamjo91.gif',
+          'https://i.redd.it/so7sofqamjo91.gif',
+          'https://i.redd.it/z71y9hqamjo91.gif',
+          'https://i.redd.it/c4wyz5ramjo91.gif',
+          'https://i.redd.it/pcz3mhqamjo91.gif',
+          'https://i.redd.it/ue2d4mqamjo91.gif',
+          'https://i.redd.it/196jplqamjo91.gif',
+          'https://i.redd.it/9osv7lqamjo91.gif',
+          'https://i.redd.it/lzeallqamjo91.gif',
+          'https://i.redd.it/nipg7lqamjo91.gif',
+          'https://i.redd.it/ff175dramjo91.gif',
+          'https://i.redd.it/mf2oclqamjo91.gif'
+          // Add the remaining gif links here
+        ];
+
+        gifElement.style.position = 'fixed';
+        gifElement.style.bottom = '0';
+        gifElement.style.left = '50%';
+        gifElement.style.transform = 'translateX(-50%)';
+
+        const body = document.getElementsByTagName('body')[0];
+
+        function changeGif() {
+          let newIndex;
+          do {
+            newIndex = Math.floor(Math.random() * gifLinks.length);
+          } while (newIndex === currentGifIndex);
+          currentGifIndex = newIndex;
+          const image = new Image();
+          image.onload = function() {
+            gifElement.style.maxWidth = `${image.width / 2}px`;
+            gifElement.style.maxHeight = `${image.height / 2}px`;
+            gifElement.src = gifLinks[currentGifIndex];
+          };
+          image.onerror = function(error) {
+            console.error('Failed to load image:', error);
+          };
+          image.src = gifLinks[currentGifIndex];
+        }
+
+        if (gifInterval) {
+        clearInterval(gifInterval);
+        if (body.contains(gifElement)) {
+          body.removeChild(gifElement);
+        }
+        gifInterval = null;
+        return;
+      }
+
+        gifInterval = setInterval(changeGif, 10000);
+        changeGif();
+        body.appendChild(gifElement);
+      }
+      function backgrounds() {
+        if (menuOpen) {
+          return;
+        }
+        const menu = document.createElement('div');
+        menu.className = 'menu';
+
+        const option1 = document.createElement('button');
+        option1.innerText = 'Altar';
+        option1.addEventListener('click', function() {
+          document.body.style.backgroundImage = "url(https://img.itch.zone/aW1nLzU4ODcxMzUucG5n/original/A%2B%2Fbft.png)";
+          localStorage.setItem('bgImage', 'https://img.itch.zone/aW1nLzU4ODcxMzUucG5n/original/A%2B%2Fbft.png');
+        });
+
+        const option2 = document.createElement('button');
+        option2.innerText = 'Night Sky';
+        option2.addEventListener('click', function() {
+          document.body.style.backgroundImage = "url('resources/bg3.png')";
+          localStorage.setItem('bgImage', 'resources/bg3.png');
+        });
+
+        const option3 = document.createElement('button');
+        option3.innerText = 'Ramen';
+        option3.addEventListener('click', function() {
+          document.body.style.backgroundImage = "url('resources/bg1.png')";
+          localStorage.setItem('bgImage', 'resources/bg1.png');
+        });
+
+        const cancel = document.createElement('button');
+        cancel.innerText = 'Cancel';
+        cancel.addEventListener('click', function() {
+          menu.style.display = 'none';
+          menuOpen = false;
+        });
+
+        menu.appendChild(option1);
+        menu.appendChild(option2);
+        menu.appendChild(option3);
+        menu.appendChild(cancel);
+
+        document.body.appendChild(menu);
+        menuOpen = true;
+
+        // Retrieve the background image URL from localStorage and set the background image
+        const bgImage = localStorage.getItem('bgImage');
+        if (bgImage) {
+          document.body.style.backgroundImage = `url(${bgImage})`;
+        }
+        }
+
+      function alarm_sounds() {
+        if (menuOpen) {
+          return;
+        }
+        const menu = document.createElement('div');
+        menu.className = 'menu';
+
+        const option1 = document.createElement('button');
+        option1.innerText = 'Buru Nyuu';
+        option1.addEventListener('click', function() {
+          alarmID = "resources/neco.mp3";
+          localStorage.setItem('alarmSound', 'resources/neco.mp3');
+        });
+
+        const option2 = document.createElement('button');
+        option2.innerText = 'Rooster';
+        option2.addEventListener('click', function() {
+          alarmID = "resources/rooster.wav";
+          localStorage.setItem('alarmSound', 'resources/rooster.wav');
+        });
+
+        const option3 = document.createElement('button');
+        option3.innerText = 'Dori Dori';
+        option3.addEventListener('click', function() {
+          alarmID = "resources/dori.mp3";
+          localStorage.setItem('alarmSound', 'resources/dori.mp3');
+        });
+
+        const cancel = document.createElement('button');
+        cancel.innerText = 'Cancel';
+        cancel.addEventListener('click', function() {
+          menu.style.display = 'none';
+          menuOpen = false;
+        });
+
+        menu.appendChild(option1);
+        menu.appendChild(option2);
+        menu.appendChild(option3);
+        menu.appendChild(cancel);
+
+        document.body.appendChild(menu);
+        menuOpen = true;
+
+        // Retrieve the selected alarm sound from localStorage
+        const selectedSound = localStorage.getItem('alarmSound');
+        if (selectedSound) {
+          alarmID = selectedSound;
+        }
+      }
+
+      function titles() {
+        if (menuOpen) {
+          return;
+        }
+        const menu = document.createElement('div');
+        menu.className = 'menu';
+
+        const option1 = document.createElement('button');
+        option1.innerText = 'Novice Waiter';
+        option1.addEventListener('click', function() {
+          topMessage.innerText = "Novice Waiter";
+          localStorage.setItem('titleOption', 'Novice Waiter');
+        })
+
+        const option2 = document.createElement('button');
+        option2.innerText = 'Cat Enjoyer';
+        option2.addEventListener('click', function() {
+          topMessage.innerText = "Cat Enjoyer";
+          localStorage.setItem('titleOption', 'Cat Enjoyer');
+        })
+
+        const option3 = document.createElement('button');
+        option3.innerText = 'CEO of Stopwatches';
+        option3.addEventListener('click', function() {
+          topMessage.innerText = "CEO of Stopwatches";
+          localStorage.setItem('titleOption', 'CEO of Stopwatches');
+        })
+
+        const cancel = document.createElement('button');
+        cancel.innerText = 'Cancel';
+        cancel.addEventListener('click', function() {
+          menu.style.display = 'none'; 
+          menuOpen = false;
+        });
+
+        menu.appendChild(option1);
+        menu.appendChild(option2);
+        menu.appendChild(option3);
+        menu.appendChild(cancel);
+
+        document.body.appendChild(menu);
+        menuOpen = true;
+
+        // retrieve and apply stored option on page load
+        const storedOption = localStorage.getItem('titleOption');
+        if (storedOption) {
+          topMessage.innerText = storedOption;
+        }
+      }
+
+
+
+</script>
+</body>
+</html>
