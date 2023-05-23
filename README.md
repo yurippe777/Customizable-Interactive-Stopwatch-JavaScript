@@ -1,7 +1,7 @@
 # Stopwatch-Game
 Uses HTML, CSS, and JavaScript to create a fun interactive stopwatch experience.
 
-The Program can be found in Timer.html
+The Program can be found in Timer.html 
 
 A short video demo of the program can be seen below.
 
